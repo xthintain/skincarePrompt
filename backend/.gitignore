@@ -1,0 +1,181 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+.virtualenv/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+database/*.db
+database/cosmetics.db
+
+# PostgreSQL
+*.pgsql
+*.dump
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Node.js / React
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# React Build
+frontend/build/
+frontend/dist/
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+coverage/
+*.cover
+.hypothesis/
+
+# Models (trained ML models)
+backend/models/**/*.pkl
+backend/models/**/*.joblib
+backend/models/**/*.h5
+backend/models/**/*.pt
+!backend/models/.gitkeep
+
+# Data files (原始爬取数据)
+data/**/*.html
+data/*.html
+!data/products.json
+!data/.gitkeep
+
+# Temp files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Windows
+Desktop.ini
+$RECYCLE.BIN/
+
+# Redis
+dump.rdb
+
+# Backup files
+*.bak
+*.backup
+
+# IDE
+*.sublime-project
+*.sublime-workspace
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+
+# Cache
+.cache/
+.sass-cache/
+*.cache
+
+# Certificates
+*.pem
+*.key
+*.crt
+*.cer
+
+# Credentials
+credentials.json
+service-account.json
+cookie.json
+
+# Local development
+local_settings.py
+.local/
+
+# Documentation build
+docs/_build/
+site/
+
+# Frontend
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# React
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Misc
+.eslintcache
+*.seed
+*.pid
+*.pid.lock
+.npm

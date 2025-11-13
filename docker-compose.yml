@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:13-alpine
+    container_name: cosmetics-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cosmetics_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/seeds:/docker-entrypoint-initdb.d
+    networks:
+      - cosmetics-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d cosmetics_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (optional - for caching and rate limiting)
+  redis:
+    image: redis:7-alpine
+    container_name: cosmetics-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - cosmetics-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cosmetics-backend
+    environment:
+      DATABASE_URL: postgresql://admin:password@database:5432/cosmetics_db
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-your-secret-key-change-in-production}
+      JWT_ACCESS_TOKEN_EXPIRES: 900
+      JWT_REFRESH_TOKEN_EXPIRES: 604800
+      FLASK_ENV: development
+      DEBUG: "True"
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - backend_models:/app/models
+      - backend_data:/app/data
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - cosmetics-network
+    command: python src/app.py
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cosmetics-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:5000/api/v1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - cosmetics-network
+    command: npm start
+
+volumes:
+  postgres_data:
+  backend_models:
+  backend_data:
+
+networks:
+  cosmetics-network:
+    driver: bridge

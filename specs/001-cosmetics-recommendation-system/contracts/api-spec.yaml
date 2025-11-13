@@ -1,0 +1,764 @@
+openapi: 3.0.3
+info:
+  title: Cosmetics Analysis and Recommendation API
+  description: RESTful API for personalized cosmetics recommendations, product analysis, and user profile management
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@cosmetics-recommendation.com
+
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Development server
+  - url: https://api.cosmetics-recommendation.com/api/v1
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: Recommendations
+    description: Personalized product recommendations
+  - name: Products
+    description: Product browsing, search, and comparison
+  - name: Users
+    description: User profile management
+  - name: Analytics
+    description: Dashboard analytics and insights
+
+paths:
+  # Authentication Endpoints
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register new user
+      description: Create a new user account with basic profile information
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                  pattern: '^[a-zA-Z0-9_]+$'
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                  description: Must contain uppercase, lowercase, number, special char
+                skin_type:
+                  type: string
+                  enum: [oily, dry, combination, normal, sensitive]
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                  username:
+                    type: string
+                  email:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Username or email already exists
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      description: Authenticate user and receive JWT tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: JWT access token (15 min expiry)
+                  refresh_token:
+                    type: string
+                    description: JWT refresh token (7 day expiry)
+                  user:
+                    $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      description: Get new access token using refresh token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Recommendation Endpoints
+  /recommendations:
+    get:
+      tags: [Recommendations]
+      summary: Get personalized recommendations
+      description: Generate product recommendations based on user profile and preferences (FR-003)
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [cleanser, moisturizer, serum, sunscreen, makeup]
+          description: Filter recommendations by product category (FR-005)
+        - name: min_price
+          in: query
+          schema:
+            type: number
+            format: float
+        - name: max_price
+          in: query
+          schema:
+            type: number
+            format: float
+          description: Price range filtering (FR-006)
+      responses:
+        '200':
+          description: Recommendations generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommendations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Recommendation'
+                  metadata:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      algorithm:
+                        type: string
+                        enum: [collaborative_filtering, content_based, hybrid, popular]
+                      generated_at:
+                        type: string
+                        format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /recommendations/feedback:
+    post:
+      tags: [Recommendations]
+      summary: Provide recommendation feedback
+      description: Mark recommendations as helpful or not helpful to improve future suggestions (FR-013)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recommendation_id, feedback]
+              properties:
+                recommendation_id:
+                  type: integer
+                feedback:
+                  type: string
+                  enum: [helpful, not_helpful]
+      responses:
+        '200':
+          description: Feedback recorded successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Product Endpoints
+  /products:
+    get:
+      tags: [Products]
+      summary: List products
+      description: Browse products with filtering and pagination (FR-017)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [cleanser, moisturizer, serum, sunscreen, makeup, other]
+        - name: brand
+          in: query
+          schema:
+            type: string
+        - name: min_price
+          in: query
+          schema:
+            type: number
+        - name: max_price
+          in: query
+          schema:
+            type: number
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [price_asc, price_desc, rating_desc, popular]
+            default: popular
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by product name, brand, or ingredient (FR-017)
+      responses:
+        '200':
+          description: Product list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductSummary'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /products/{product_id}:
+    get:
+      tags: [Products]
+      summary: Get product details
+      description: Retrieve detailed product information including ingredients and ratings (FR-007)
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{product_id}/ingredients:
+    get:
+      tags: [Products]
+      summary: Get product ingredient analysis
+      description: Retrieve ingredient breakdown with safety ratings and allergen warnings (FR-002, FR-008)
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ingredient analysis retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_id:
+                    type: integer
+                  product_name:
+                    type: string
+                  ingredients:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IngredientAnalysis'
+                  user_allergens:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ingredient_name:
+                          type: string
+                        severity:
+                          type: string
+                          enum: [mild, moderate, severe]
+                    description: Allergens detected based on user profile (FR-008)
+                  overall_safety_score:
+                    type: number
+                    format: float
+                    minimum: 0
+                    maximum: 10
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/compare:
+    post:
+      tags: [Products]
+      summary: Compare products
+      description: Side-by-side comparison of up to 4 products (FR-009)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_ids]
+              properties:
+                product_ids:
+                  type: array
+                  items:
+                    type: integer
+                  minItems: 2
+                  maxItems: 4
+      responses:
+        '200':
+          description: Product comparison generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductDetail'
+                  comparison_matrix:
+                    type: object
+                    properties:
+                      ingredient_overlap:
+                        type: object
+                        description: Common and unique ingredients
+                      price_comparison:
+                        type: array
+                        items:
+                          type: object
+                      suitability_scores:
+                        type: object
+                        description: Suitability for user's skin type
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # User Profile Endpoints
+  /users/profile:
+    get:
+      tags: [Users]
+      summary: Get user profile
+      description: Retrieve current user's profile information
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags: [Users]
+      summary: Update user profile
+      description: Update user profile including skin type, concerns, and preferences (FR-001)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdate'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/allergies:
+    post:
+      tags: [Users]
+      summary: Add ingredient allergy
+      description: Add an ingredient to user's allergy list (FR-001)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ingredient_id]
+              properties:
+                ingredient_id:
+                  type: integer
+                severity:
+                  type: string
+                  enum: [mild, moderate, severe]
+                  default: moderate
+      responses:
+        '201':
+          description: Allergy added successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/favorites:
+    get:
+      tags: [Users]
+      summary: Get favorite products
+      description: Retrieve user's saved favorite products (FR-012)
+      responses:
+        '200':
+          description: Favorites retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  favorites:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductSummary'
+
+    post:
+      tags: [Users]
+      summary: Add product to favorites
+      description: Save a product as favorite (FR-012)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_id]
+              properties:
+                product_id:
+                  type: integer
+      responses:
+        '201':
+          description: Product added to favorites
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # Analytics Endpoints
+  /analytics/dashboard:
+    get:
+      tags: [Analytics]
+      summary: Get dashboard analytics
+      description: Retrieve overview metrics for analytics dashboard (FR-011, FR-018)
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  overview:
+                    type: object
+                    properties:
+                      total_users:
+                        type: integer
+                      total_products:
+                        type: integer
+                      recommendations_generated:
+                        type: integer
+                      avg_user_satisfaction:
+                        type: number
+                  trends:
+                    type: object
+                    properties:
+                      popular_categories:
+                        type: array
+                        items:
+                          type: object
+                      trending_ingredients:
+                        type: array
+                        items:
+                          type: object
+                  user_segments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        skin_type:
+                          type: string
+                        user_count:
+                          type: integer
+                        top_concerns:
+                          type: array
+                          items:
+                            type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserProfile:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        skin_type:
+          type: string
+          enum: [oily, dry, combination, normal, sensitive]
+        concerns:
+          type: array
+          items:
+            type: string
+        allergies:
+          type: array
+          items:
+            type: object
+            properties:
+              ingredient_id:
+                type: integer
+              ingredient_name:
+                type: string
+              severity:
+                type: string
+        budget_min:
+          type: number
+        budget_max:
+          type: number
+        preferred_brands:
+          type: array
+          items:
+            type: string
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        skin_type:
+          type: string
+          enum: [oily, dry, combination, normal, sensitive]
+        concerns:
+          type: array
+          items:
+            type: string
+        budget_min:
+          type: number
+        budget_max:
+          type: number
+        preferred_brands:
+          type: array
+          items:
+            type: string
+
+    ProductSummary:
+      type: object
+      properties:
+        product_id:
+          type: integer
+        name:
+          type: string
+        brand:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        avg_rating:
+          type: number
+        image_url:
+          type: string
+
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/ProductSummary'
+        - type: object
+          properties:
+            description:
+              type: string
+            ingredients:
+              type: array
+              items:
+                type: string
+            rating_count:
+              type: integer
+            is_complete:
+              type: boolean
+
+    Recommendation:
+      type: object
+      properties:
+        product:
+          $ref: '#/components/schemas/ProductSummary'
+        relevance_score:
+          type: number
+          description: 0.0 - 1.0 indicating match quality (FR-020)
+        confidence_score:
+          type: number
+        reasoning:
+          type: object
+          properties:
+            factors:
+              type: array
+              items:
+                type: string
+          description: Explanation for recommendation (FR-004)
+
+    IngredientAnalysis:
+      type: object
+      properties:
+        ingredient_id:
+          type: integer
+        name:
+          type: string
+        function:
+          type: string
+        safety_rating:
+          type: integer
+          minimum: 1
+          maximum: 10
+        is_allergen:
+          type: boolean
+        is_user_allergen:
+          type: boolean
+          description: True if user is allergic to this ingredient
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        per_page:
+          type: integer
+        total_pages:
+          type: integer
+        total_items:
+          type: integer
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: object
+
+    Unauthorized:
+      description: Unauthorized - invalid or missing token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Invalid or expired token
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Resource not found
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              trace_id:
+                type: string
