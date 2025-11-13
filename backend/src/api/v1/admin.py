@@ -27,22 +27,18 @@ def run_script_async(script_name, task_key):
     task_status[task_key] = {'status': 'running', 'message': '正在执行...'}
 
     try:
-        # 获取backend目录 (从 backend/src/api/v1/admin.py 往上4层到backend/)
-        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-        # 脚本路径（backend/scripts/xxx.py）
-        script_path = os.path.join(current_dir, 'scripts', script_name)
+        # 使用相对路径（相对于backend目录）
+        script_path = os.path.join('scripts', script_name)
 
         # 确保脚本文件存在
         if not os.path.exists(script_path):
             raise FileNotFoundError(f"脚本文件不存在: {script_path}")
 
-        # 运行脚本，设置工作目录为backend目录
+        # 运行脚本
         result = subprocess.run(
             ['python', script_path],
             capture_output=True,
             text=True,
-            cwd=current_dir,  # 设置工作目录
             timeout=300  # 5分钟超时
         )
 
