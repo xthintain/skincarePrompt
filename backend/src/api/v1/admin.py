@@ -27,10 +27,10 @@ def run_script_async(script_name, task_key):
     task_status[task_key] = {'status': 'running', 'message': '正在执行...'}
 
     try:
-        # 获取项目根目录
-        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        # 获取backend目录 (从 backend/src/api/v1/admin.py 往上4层到backend/)
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-        # 脚本路径（相对于项目根目录backend/）
+        # 脚本路径（backend/scripts/xxx.py）
         script_path = os.path.join(current_dir, 'scripts', script_name)
 
         # 确保脚本文件存在
