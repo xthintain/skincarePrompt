@@ -155,8 +155,8 @@ class SkincareMLRecommender:
         print(f"   - 相似度度量: cosine")
         print(f"   - 邻居数量: {n_neighbors - 1}")
 
-    def save_model(self, model_dir='backend/models/skincare_ml'):
-        """保存模型"""
+    def save_model(self, model_dir='models/skincare_ml'):
+        """保存模型（相对于backend目录）"""
         print(f"\n保存模型到 {model_dir}...")
 
         os.makedirs(model_dir, exist_ok=True)

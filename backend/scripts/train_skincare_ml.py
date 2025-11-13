@@ -216,8 +216,8 @@ class SkincareMLRecommender:
 
         return recommendations
 
-    def save_model(self, model_dir='backend/models/skincare_ml'):
-        """保存模型"""
+    def save_model(self, model_dir='models/skincare_ml'):
+        """保存模型（相对于backend目录）"""
         print(f"\n保存模型到 {model_dir}...")
 
         os.makedirs(model_dir, exist_ok=True)

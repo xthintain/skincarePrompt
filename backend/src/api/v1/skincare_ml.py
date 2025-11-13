@@ -29,7 +29,8 @@ def load_models():
     if _model_cache['tfidf_vectorizer'] is not None:
         return _model_cache
 
-    model_dir = 'backend/models/skincare_ml'
+    # 使用相对路径（相对于backend目录）
+    model_dir = 'models/skincare_ml'
 
     try:
         # 加载TF-IDF向量化器

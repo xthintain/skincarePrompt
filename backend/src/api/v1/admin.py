@@ -164,7 +164,7 @@ def health_check():
         session.close()
 
         # 检查ML模型文件
-        model_dir = 'backend/models/skincare_ml'
+        model_dir = 'models/skincare_ml'
         model_files = [
             'tfidf_vectorizer.pkl',
             'tfidf_matrix.pkl',
@@ -209,7 +209,7 @@ def system_info():
         session.close()
 
         # 检查模型文件
-        model_dir = 'backend/models/skincare_ml'
+        model_dir = 'models/skincare_ml'
         model_info = {}
 
         if os.path.exists(model_dir):
