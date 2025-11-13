@@ -121,9 +121,17 @@ const FunctionModules = () => {
       // 对于不同的模块，调用不同的API
       let response;
 
-      if (module.id === 'apiServer') {
+      if (module.id === 'database' || module.id === 'dataImport' || module.id === 'mlTraining') {
+        // 管理API - POST请求启动任务
+        response = await fetch(`http://localhost:5000${module.endpoint}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+      } else if (module.id === 'apiServer') {
         // API服务器状态检查
-        response = await fetch('http://localhost:5000/api/v1/skincare/analytics');
+        response = await fetch('http://localhost:5000/api/v1/admin/health');
       } else if (module.id === 'analytics') {
         // 数据分析
         response = await fetch(`http://localhost:5000${module.endpoint}`);
@@ -140,32 +148,57 @@ const FunctionModules = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setModuleStatus(prev => ({ ...prev, [module.id]: 'success' }));
 
-        // 显示结果
-        Modal.success({
-          title: `${module.title} - 执行成功`,
-          content: (
-            <div>
-              <p>模块已成功运行</p>
-              {module.id === 'analytics' && data.data && (
-                <div>
-                  <p>总商品数: {data.data.total_products}</p>
-                  <p>京东商品: {data.data.jd_count}</p>
-                  <p>淘宝商品: {data.data.tb_count}</p>
-                </div>
-              )}
-              {module.id === 'recommendation' && data.model_info && (
-                <div>
-                  <p>商品总数: {data.model_info.total_products}</p>
-                  <p>特征维度: {data.model_info.tfidf_features}</p>
-                  <p>算法: {data.model_info.algorithm}</p>
-                </div>
-              )}
-            </div>
-          ),
-          width: 600,
-        });
+        // 对于管理任务,显示任务已启动的信息
+        if (module.id === 'database' || module.id === 'dataImport' || module.id === 'mlTraining') {
+          message.success(`${module.title}任务已启动！`);
+          Modal.info({
+            title: `${module.title} - 任务已启动`,
+            content: (
+              <div>
+                <p>{data.message}</p>
+                <p>任务ID: {data.task_id}</p>
+                <p>任务正在后台运行中，请稍后查看状态</p>
+              </div>
+            ),
+          });
+          setModuleStatus(prev => ({ ...prev, [module.id]: 'success' }));
+        } else {
+          // 其他模块直接显示成功
+          setModuleStatus(prev => ({ ...prev, [module.id]: 'success' }));
+
+          // 显示结果
+          Modal.success({
+            title: `${module.title} - 执行成功`,
+            content: (
+              <div>
+                <p>模块已成功运行</p>
+                {module.id === 'apiServer' && data.database && (
+                  <div>
+                    <p>数据库状态: {data.database}</p>
+                    <p>模型状态: {data.models}</p>
+                    <p>API版本: {data.api_version}</p>
+                  </div>
+                )}
+                {module.id === 'analytics' && data.data && (
+                  <div>
+                    <p>总商品数: {data.data.total_products}</p>
+                    <p>京东商品: {data.data.jd_count}</p>
+                    <p>淘宝商品: {data.data.tb_count}</p>
+                  </div>
+                )}
+                {module.id === 'recommendation' && data.model_info && (
+                  <div>
+                    <p>商品总数: {data.model_info.total_products}</p>
+                    <p>特征维度: {data.model_info.tfidf_features}</p>
+                    <p>算法: {data.model_info.algorithm}</p>
+                  </div>
+                )}
+              </div>
+            ),
+            width: 600,
+          });
+        }
       } else {
         throw new Error(`HTTP ${response.status}`);
       }
