@@ -20,7 +20,9 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
+.specify/
+.claude/
+specs/
 # Virtual Environments
 venv/
 env/
