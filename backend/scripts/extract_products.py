@@ -64,8 +64,8 @@ def extract_all_products():
     """提取所有商品信息"""
     all_products = []
 
-    # 提取data目录下的JD商品
-    jd_dir = '/home/xthintain/code/LLL/data/JD'
+    # 提取data目录下的JD商品（使用相对路径）
+    jd_dir = os.path.join('..', 'data', 'JD')
     if os.path.exists(jd_dir):
         for filename in os.listdir(jd_dir):
             if filename.endswith('.html'):
@@ -74,8 +74,8 @@ def extract_all_products():
                 all_products.extend(products)
                 print(f"从 {filename} 提取了 {len(products)} 个商品")
 
-    # 提取data目录下的TB商品
-    tb_dir = '/home/xthintain/code/LLL/data/TB'
+    # 提取data目录下的TB商品（使用相对路径）
+    tb_dir = os.path.join('..', 'data', 'TB')
     if os.path.exists(tb_dir):
         for filename in os.listdir(tb_dir):
             if filename.endswith('.html'):
@@ -84,8 +84,8 @@ def extract_all_products():
                 all_products.extend(products)
                 print(f"从 {filename} 提取了 {len(products)} 个商品")
 
-    # 提取data目录下的商品(直接在data下的p*.html文件)
-    data_dir = '/home/xthintain/code/LLL/data'
+    # 提取data目录下的商品(直接在data下的p*.html文件)（使用相对路径）
+    data_dir = os.path.join('..', 'data')
     for filename in os.listdir(data_dir):
         if filename.startswith('p') and filename.endswith('.html'):
             filepath = os.path.join(data_dir, filename)
@@ -110,8 +110,8 @@ if __name__ == '__main__':
     # 取前100个商品
     top_100 = products[:100] if len(products) >= 100 else products
 
-    # 保存到JSON文件
-    output_file = '/home/xthintain/code/LLL/data/products.json'
+    # 保存到JSON文件（使用相对路径）
+    output_file = os.path.join('..', 'data', 'products.json')
     save_products_to_json(top_100, output_file)
 
     print(f"\n总共提取了 {len(products)} 个商品")

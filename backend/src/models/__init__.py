@@ -14,9 +14,6 @@ from src.models.user_rating import UserRating
 from src.models.user_interaction import UserInteraction
 
 # Import DimDate from seed script
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from scripts.seed_dim_date import DimDate
 
 __all__ = [

@@ -182,8 +182,8 @@ def main():
 
         all_products = []
 
-        # 解析京东数据
-        jd_dir = '/home/xthintain/code/LLL/data/JD'
+        # 解析京东数据（使用相对路径）
+        jd_dir = os.path.join('..', 'data', 'JD')
         print(f"\n解析京东数据 ({jd_dir})...")
         jd_count = 0
         for i in range(10):
@@ -198,8 +198,8 @@ def main():
 
         print(f"京东总计: {jd_count} 个商品")
 
-        # 解析淘宝数据
-        tb_dir = '/home/xthintain/code/LLL/data/TB'
+        # 解析淘宝数据（使用相对路径）
+        tb_dir = os.path.join('..', 'data', 'TB')
         print(f"\n解析淘宝数据 ({tb_dir})...")
         tb_count = 0
         for i in range(10):
