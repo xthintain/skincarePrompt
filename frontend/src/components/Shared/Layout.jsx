@@ -8,6 +8,7 @@ import {
   HomeOutlined,
   ShoppingOutlined,
   BarChartOutlined,
+  ControlOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Layout.css';
@@ -34,6 +35,11 @@ const AppLayout = ({ children }) => {
       key: '/analytics',
       icon: <BarChartOutlined />,
       label: 'Analytics',
+    },
+    {
+      key: '/modules',
+      icon: <ControlOutlined />,
+      label: 'Modules',
     },
   ];
 

@@ -8,6 +8,7 @@ import AppLayout from './components/Shared/Layout';
 import Dashboard from './components/Dashboard/Dashboard';
 import SkincareAnalytics from './components/Skincare/SkincareAnalytics';
 import ProductsGrid from './components/Skincare/ProductsGrid';
+import FunctionModules from './components/FunctionModules/FunctionModules';
 import 'antd/dist/reset.css';
 import './App.css';
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/products" element={<ProductsGrid />} />
           <Route path="/analytics" element={<SkincareAnalytics />} />
+          <Route path="/modules" element={<FunctionModules />} />
 
           {/* Default route - 默认显示推荐商品 */}
           <Route path="/" element={<Navigate to="/products" replace />} />
