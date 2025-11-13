@@ -23,6 +23,9 @@ MANIFEST
 .specify/
 .claude/
 specs/
+cons.md
+spe.md
+plan.md
 # Virtual Environments
 venv/
 env/
