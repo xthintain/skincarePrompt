@@ -112,3 +112,11 @@ coverage/
 # Production build artifacts
 frontend/build/
 frontend/dist/
+
+# Project configuration (should not be committed)
+.claude/
+.specify/
+specs/
+cons.md
+spe.md
+plan.md
