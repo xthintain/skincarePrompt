@@ -578,7 +578,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow and code style g
 
 ## License
 
-[Your License Here]
+[PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) — non-commercial use only; commercial use requires a separate license. See [LICENSE](LICENSE).
 
 ## Citation
 
